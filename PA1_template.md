@@ -5,17 +5,13 @@ output:
     keep_md: true
 ---
 ### By: Muhammad Haseeb Ahmad
-```{r setoptions, echo = F}
-library(knitr)
-opts_chunk$set(message = F, warning = F)
-```
-```{r echo=FALSE, results='hide'}
-setwd('G:/Courses of my interest/John Hopkins - Reproducible research/Week 2/Assignment/RepData_PeerAssessment1')
-```
+
+
 
 ## Loading and preprocessing the data
 Load and preprocess the data using:
-```{r}
+
+```r
 library(lubridate)
 library(dplyr)
 
@@ -29,11 +25,22 @@ data <- mutate(data, dateTime = ymd_hms(paste(data$date, data$interval),
 head(data)
 ```
 
+```
+##   steps       date interval            dateTime
+## 1    NA 2012-10-01     0000 2012-10-01 00:00:00
+## 2    NA 2012-10-01     0005 2012-10-01 00:05:00
+## 3    NA 2012-10-01     0010 2012-10-01 00:10:00
+## 4    NA 2012-10-01     0015 2012-10-01 00:15:00
+## 5    NA 2012-10-01     0020 2012-10-01 00:20:00
+## 6    NA 2012-10-01     0025 2012-10-01 00:25:00
+```
+
 The first six entries of the processed data are shown above.
 
 ## What is mean total number of steps taken per day?
 We first extract only the complete cases of the data so as to observe the trend. Removing 'NA' cases gives us an estimate of the general trend.
-```{r}
+
+```r
 # Call the required package
 library(ggplot2)
 
@@ -63,12 +70,15 @@ histogram <- ggplot(stepsPerDay) +
 print(histogram)
 ```
 
-The histogram shown above indicates the vertical lines for mean and median. The mean value is: `r meanSteps`, and the median value is: `r medianSteps`
+![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3-1.png) 
+
+The histogram shown above indicates the vertical lines for mean and median. The mean value is: 1.0766 &times; 10<sup>4</sup>, and the median value is: 10765
 
 ## What is the average daily activity pattern?
 We first construct a dataframe for the average number of steps taken by time interval. For example a time interval of '0815' would refer to the time interval  08:15-08:20am and the number of steps would be the number of steps taken during this time interval each day on average.
 
-```{r}
+
+```r
 # Create data frame for average steps taken by interval over the two months
 stepsPerInterval <- aggregate(completeCases$steps, 
                               by = list(completeCases$interval),
@@ -92,19 +102,22 @@ activityPattern <- ggplot(stepsPerInterval, aes(x = interval,
                                 size = Max_point), color = 'black')
                         
 print(activityPattern)
-
 ```
 
-The highest average number of steps is `r maxRow$steps` steps on the `r maxRow$interval` interval.
+![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4-1.png) 
+
+The highest average number of steps is 206.1698113 steps on the 835 interval.
 
 ## Imputing missing values
 We get the total number of missing rows by subtracting number of complete cases from the total number of cases (Note: we will use the dataset of complete cases created earlier):
-```{r}
+
+```r
 nMissingValues <- nrow(data) - nrow(completeCases)
 ```
 
 We fill in the missing values by using the average number of steps for that time interval:
-```{r}
+
+```r
 # Package to create plots side by side for quick comparison before generating the final output
 library(gridExtra)
 
@@ -125,9 +138,20 @@ for(i in 1:nMissingValues) {
 filledSteps <- rbind(completeCases, missingCases)
 head(filledSteps)
 ```
+
+```
+##     steps       date interval            dateTime
+## 289     0 2012-10-02     0000 2012-10-02 00:00:00
+## 290     0 2012-10-02     0005 2012-10-02 00:05:00
+## 291     0 2012-10-02     0010 2012-10-02 00:10:00
+## 292     0 2012-10-02     0015 2012-10-02 00:15:00
+## 293     0 2012-10-02     0020 2012-10-02 00:20:00
+## 294     0 2012-10-02     0025 2012-10-02 00:25:00
+```
 The first six rows of the data, now with missing values replaced, is shown above.
 Next, we work towards constructing our plots based on this new data frame.
-```{r}
+
+```r
 # Construct a data frame containing the required values for the histogram of frequency of total number of steps per day.
 stepsPerDayFilled <- aggregate(filledSteps$steps, by = list(filledSteps$date),
                          FUN=sum)
@@ -158,11 +182,14 @@ histogram2 <- ggplot(stepsPerDayFilled) +
 print(histogram2)
 ```
 
-The histogram shown above indicates the vertical lines for mean and median. The mean value is: `r meanSteps2`, and the median value is: `r medianSteps2`. You may observe that the data is now more concentrated towards the mean relative to the case where we only considered complete cases. The value for the median is also slightly higher for the histogram with missing values imputed.
+![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7-1.png) 
+
+The histogram shown above indicates the vertical lines for mean and median. The mean value is: 1.0766 &times; 10<sup>4</sup>, and the median value is: 1.0766 &times; 10<sup>4</sup>. You may observe that the data is now more concentrated towards the mean relative to the case where we only considered complete cases. The value for the median is also slightly higher for the histogram with missing values imputed.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 To compare activity patterns between weekdays and weekends we would want to build two time series plots for the average number of steps per interval for weekdays and weekends separately.
-```{r}
+
+```r
 # We first add a new column to label weekdays and weekends to the filledSteps data frame
 filledSteps <- mutate(filledSteps, day = wday(filledSteps$dateTime))
 filledSteps <- mutate(filledSteps, cats = as.factor(ifelse(day %in% c(1, 7), 
@@ -185,5 +212,7 @@ activityPattern2 <- ggplot(stepsPerInterval2, aes(x = interval, y = steps)) +
 # Display the plot on the screen
 print(activityPattern2)
 ```
+
+![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8-1.png) 
 
 You may observe from the above plots that the person was really active between 0800-1000 on weekdays(perhaps the person used to go for a run). The activity is more distributed on the weekends with short bursts of activity.
